@@ -36,6 +36,22 @@ public sealed class ChannelListItem : INotifyPropertyChanged
         }
     }
 
+    private DateTime? _mailSentAtUtc;
+
+    /// <summary>Заполняется только после успешной отправки письма на FoundEmail.</summary>
+    [DisplayName("Письмо отправлено (UTC)")]
+    public DateTime? MailSentAtUtc
+    {
+        get => _mailSentAtUtc;
+        set
+        {
+            if (_mailSentAtUtc == value)
+                return;
+            _mailSentAtUtc = value;
+            Notify();
+        }
+    }
+
     [Browsable(false)]
     public string AboutUrl => $"https://www.youtube.com/channel/{ChannelId}/about";
 }

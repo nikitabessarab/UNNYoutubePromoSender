@@ -9,6 +9,8 @@ public sealed class AppUiSettings
     public int SearchPages { get; set; } = 3;
     public bool RussianChannelsOnly { get; set; }
     public bool NonRussiaChannelsOnly { get; set; }
+    /// <summary>Показать каналы только из локального кеша, без запросов к YouTube API.</summary>
+    public bool SearchOnlyFromCache { get; set; }
     public bool SkipFilledEmails { get; set; } = true;
     public string GmailAddress { get; set; } = "";
     public string GmailAppPassword { get; set; } = "";

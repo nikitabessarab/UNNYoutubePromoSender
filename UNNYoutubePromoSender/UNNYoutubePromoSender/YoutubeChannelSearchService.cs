@@ -6,6 +6,7 @@ namespace UNNYoutubePromoSender;
 
 public sealed class YoutubeChannelSearchService
 {
+    /// <param name="searchOnlyFromCache">??? ???????? ? YouTube ? ?????? ?????????? ?? <see cref="YoutubeSearchCacheStore"/>.</param>
     public async Task<IReadOnlyList<ChannelListItem>> SearchChannelsAsync(
         string apiKey,
         string? searchQuery,
@@ -14,10 +15,18 @@ public sealed class YoutubeChannelSearchService
         int maxSearchPages,
         bool russianChannelsOnly,
         bool nonRussiaChannelsOnly,
+        bool searchOnlyFromCache,
         CancellationToken cancellationToken = default)
     {
+        if (searchOnlyFromCache)
+        {
+            await Task.Yield();
+            var dict = YoutubeSearchCacheStore.LoadDictionary();
+            return FilterFromCache(dict, minSubscribers, maxSubscribers, russianChannelsOnly, nonRussiaChannelsOnly);
+        }
+
         if (string.IsNullOrWhiteSpace(apiKey))
-            throw new ArgumentException("Укажите API-ключ YouTube Data API v3.", nameof(apiKey));
+            throw new ArgumentException("??????? API-???? YouTube Data API v3.", nameof(apiKey));
 
         var pages = Math.Max(1, maxSearchPages);
 
@@ -43,13 +52,40 @@ public sealed class YoutubeChannelSearchService
             return Array.Empty<ChannelListItem>();
 
         var distinct = channelIds.Distinct().ToList();
+        var cacheDict = YoutubeSearchCacheStore.LoadDictionary();
+
+        var needFetchIds = new List<string>();
+        foreach (var id in distinct)
+        {
+            if (!cacheDict.ContainsKey(id))
+                needFetchIds.Add(id);
+        }
+
         var result = new List<ChannelListItem>();
 
-        for (var i = 0; i < distinct.Count; i += 50)
+        foreach (var id in distinct)
+        {
+            if (!cacheDict.TryGetValue(id, out var cached))
+                continue;
+
+            if (cached.SubscriberCount < minSubscribers || cached.SubscriberCount > maxSubscribers)
+                continue;
+
+            if (russianChannelsOnly && !cached.PassesRussianChannelHeuristic())
+                continue;
+
+            if (nonRussiaChannelsOnly && cached.IsRussiaCountry())
+                continue;
+
+            result.Add(cached.ToChannelListItem());
+        }
+
+        var cacheModified = false;
+        for (var i = 0; i < needFetchIds.Count; i += 50)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var batch = distinct.Skip(i).Take(50).ToList();
+            var batch = needFetchIds.Skip(i).Take(50).ToList();
             var channelsRequest = youtube.Channels.List("snippet,statistics");
             channelsRequest.Id = string.Join(",", batch);
 
@@ -62,6 +98,10 @@ public sealed class YoutubeChannelSearchService
                 var id = ch.Id ?? "";
                 if (string.IsNullOrEmpty(id))
                     continue;
+
+                var cached = CachedYoutubeChannelFromApi(ch);
+                cacheDict[cached.ChannelId] = cached;
+                cacheModified = true;
 
                 var subs = ch.Statistics?.SubscriberCount;
                 if (subs is null || subs < minSubscribers || subs > maxSubscribers)
@@ -89,9 +129,61 @@ public sealed class YoutubeChannelSearchService
             }
         }
 
+        if (cacheModified)
+            YoutubeSearchCacheStore.SaveDictionary(cacheDict);
+
         return result
             .OrderByDescending(c => c.SubscriberCount)
             .ToList();
+    }
+
+    private static IReadOnlyList<ChannelListItem> FilterFromCache(
+        Dictionary<string, CachedYoutubeChannel> cache,
+        ulong minSubscribers,
+        ulong maxSubscribers,
+        bool russianChannelsOnly,
+        bool nonRussiaChannelsOnly)
+    {
+        var result = new List<ChannelListItem>();
+        foreach (var c in cache.Values)
+        {
+            if (c.SubscriberCount < minSubscribers || c.SubscriberCount > maxSubscribers)
+                continue;
+            if (russianChannelsOnly && !c.PassesRussianChannelHeuristic())
+                continue;
+            if (nonRussiaChannelsOnly && c.IsRussiaCountry())
+                continue;
+            result.Add(c.ToChannelListItem());
+        }
+
+        return result
+            .OrderByDescending(c => c.SubscriberCount)
+            .ToList();
+    }
+
+    private static CachedYoutubeChannel CachedYoutubeChannelFromApi(Channel ch)
+    {
+        var id = ch.Id ?? "";
+        var subs = ch.Statistics?.SubscriberCount ?? 0;
+        var title = ch.Snippet?.Title ?? id;
+        var custom = ch.Snippet?.CustomUrl;
+        var url = !string.IsNullOrEmpty(custom)
+            ? $"https://www.youtube.com/{custom}"
+            : $"https://www.youtube.com/channel/{id}";
+        var desc = ch.Snippet?.Description ?? "";
+        if (desc.Length > 500)
+            desc = desc[..500];
+
+        return new CachedYoutubeChannel
+        {
+            ChannelId = id,
+            Title = title,
+            SubscriberCount = subs,
+            ChannelUrl = url,
+            DefaultLanguage = ch.Snippet?.DefaultLanguage,
+            Country = ch.Snippet?.Country,
+            DescriptionSnippet = string.IsNullOrEmpty(desc) ? null : desc
+        };
     }
 
     private static async Task CollectChannelIdsSingleQueryAsync(
@@ -187,10 +279,10 @@ public sealed class YoutubeChannelSearchService
         if (russianChannelsOnly)
         {
             var list = new List<string>();
-            const string letters = "абвгдежзийклмнопрстуфхцчшщъыьэюя";
+            const string letters = "?????????????????????????????????";
             foreach (var c in letters)
                 list.Add(c.ToString());
-            list.AddRange(new[] { "на", "не", "но", "по", "то", "чт", "как", "для", "это", "где", "все", "топ" });
+            list.AddRange(new[] { "??", "??", "??", "??", "??", "??", "???", "???", "???", "???", "???", "???" });
             return list;
         }
 

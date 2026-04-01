@@ -22,6 +22,9 @@ namespace UNNYoutubePromoSender
             txtApiKey = new TextBox();
             lblQuery = new Label();
             txtQuery = new TextBox();
+            chkRussianChannelsOnly = new CheckBox();
+            chkNonRussiaChannelsOnly = new CheckBox();
+            chkSearchFromCacheOnly = new CheckBox();
             lblMinSubs = new Label();
             numMinSubs = new NumericUpDown();
             lblMaxSubs = new Label();
@@ -36,8 +39,6 @@ namespace UNNYoutubePromoSender
             chkSkipFilledEmails = new CheckBox();
             btnAutoTableWalk = new Button();
             btnStopTableWalk = new Button();
-            chkRussianChannelsOnly = new CheckBox();
-            chkNonRussiaChannelsOnly = new CheckBox();
             grpMailTransport = new GroupBox();
             lblSmtpBlock = new Label();
             txtSmtpHost = new TextBox();
@@ -78,15 +79,17 @@ namespace UNNYoutubePromoSender
             grpMail.SuspendLayout();
             statusStrip.SuspendLayout();
             SuspendLayout();
-            //
+            // 
             // grpYouTube
-            //
+            // 
+            grpYouTube.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             grpYouTube.Controls.Add(lblApiKey);
             grpYouTube.Controls.Add(txtApiKey);
             grpYouTube.Controls.Add(lblQuery);
             grpYouTube.Controls.Add(txtQuery);
             grpYouTube.Controls.Add(chkRussianChannelsOnly);
             grpYouTube.Controls.Add(chkNonRussiaChannelsOnly);
+            grpYouTube.Controls.Add(chkSearchFromCacheOnly);
             grpYouTube.Controls.Add(lblMinSubs);
             grpYouTube.Controls.Add(numMinSubs);
             grpYouTube.Controls.Add(lblMaxSubs);
@@ -103,78 +106,88 @@ namespace UNNYoutubePromoSender
             grpYouTube.Controls.Add(btnStopTableWalk);
             grpYouTube.Location = new Point(12, 12);
             grpYouTube.Name = "grpYouTube";
-            grpYouTube.Size = new Size(776, 405);
+            grpYouTube.Size = new Size(794, 405);
             grpYouTube.TabIndex = 0;
             grpYouTube.TabStop = false;
             grpYouTube.Text = "YouTube: поиск каналов (API v3)";
-            //
+            // 
             // lblApiKey
-            //
+            // 
             lblApiKey.AutoSize = true;
             lblApiKey.Location = new Point(12, 28);
             lblApiKey.Name = "lblApiKey";
-            lblApiKey.Size = new Size(51, 15);
+            lblApiKey.Size = new Size(60, 15);
             lblApiKey.TabIndex = 0;
             lblApiKey.Text = "API-ключ";
-            //
+            // 
             // txtApiKey
-            //
+            // 
             txtApiKey.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             txtApiKey.Location = new Point(120, 25);
             txtApiKey.Name = "txtApiKey";
-            txtApiKey.Size = new Size(640, 23);
+            txtApiKey.Size = new Size(658, 23);
             txtApiKey.TabIndex = 1;
             txtApiKey.UseSystemPasswordChar = true;
-            //
+            // 
             // lblQuery
-            //
+            // 
             lblQuery.AutoSize = true;
             lblQuery.Location = new Point(12, 57);
             lblQuery.Name = "lblQuery";
-            lblQuery.Size = new Size(42, 15);
+            lblQuery.Size = new Size(99, 15);
             lblQuery.TabIndex = 2;
             lblQuery.Text = "Запрос (необяз.)";
-            //
+            // 
             // txtQuery
-            //
+            // 
             txtQuery.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             txtQuery.Location = new Point(120, 54);
             txtQuery.Name = "txtQuery";
             txtQuery.PlaceholderText = "пусто — только диапазон подписчиков (широкий поиск)";
-            txtQuery.Size = new Size(640, 23);
+            txtQuery.Size = new Size(658, 23);
             txtQuery.TabIndex = 3;
-            //
+            // 
             // chkRussianChannelsOnly
-            //
+            // 
             chkRussianChannelsOnly.AutoSize = true;
             chkRussianChannelsOnly.Location = new Point(12, 81);
             chkRussianChannelsOnly.Name = "chkRussianChannelsOnly";
-            chkRussianChannelsOnly.Size = new Size(230, 19);
+            chkRussianChannelsOnly.Size = new Size(199, 19);
             chkRussianChannelsOnly.TabIndex = 4;
             chkRussianChannelsOnly.Text = "Только русскоязычные каналы";
             chkRussianChannelsOnly.UseVisualStyleBackColor = true;
-            //
+            // 
             // chkNonRussiaChannelsOnly
-            //
+            // 
             chkNonRussiaChannelsOnly.AutoSize = true;
             chkNonRussiaChannelsOnly.Location = new Point(260, 81);
             chkNonRussiaChannelsOnly.Name = "chkNonRussiaChannelsOnly";
-            chkNonRussiaChannelsOnly.Size = new Size(198, 19);
+            chkNonRussiaChannelsOnly.Size = new Size(177, 19);
             chkNonRussiaChannelsOnly.TabIndex = 18;
             chkNonRussiaChannelsOnly.Text = "Только каналы не в России";
             chkNonRussiaChannelsOnly.UseVisualStyleBackColor = true;
-            //
+            // 
+            // chkSearchFromCacheOnly
+            // 
+            chkSearchFromCacheOnly.AutoSize = true;
+            chkSearchFromCacheOnly.Location = new Point(445, 79);
+            chkSearchFromCacheOnly.Name = "chkSearchFromCacheOnly";
+            chkSearchFromCacheOnly.Size = new Size(340, 19);
+            chkSearchFromCacheOnly.TabIndex = 19;
+            chkSearchFromCacheOnly.Text = "Только из кеша на диске (без YouTube API, 0 квоты)";
+            chkSearchFromCacheOnly.UseVisualStyleBackColor = true;
+            // 
             // lblMinSubs
-            //
+            // 
             lblMinSubs.AutoSize = true;
             lblMinSubs.Location = new Point(12, 111);
             lblMinSubs.Name = "lblMinSubs";
-            lblMinSubs.Size = new Size(102, 15);
+            lblMinSubs.Size = new Size(97, 15);
             lblMinSubs.TabIndex = 4;
             lblMinSubs.Text = "Подписчиков от";
-            //
+            // 
             // numMinSubs
-            //
+            // 
             numMinSubs.Location = new Point(120, 109);
             numMinSubs.Maximum = new decimal(new int[] { 2000000000, 0, 0, 0 });
             numMinSubs.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
@@ -183,18 +196,18 @@ namespace UNNYoutubePromoSender
             numMinSubs.TabIndex = 5;
             numMinSubs.ThousandsSeparator = true;
             numMinSubs.Value = new decimal(new int[] { 100000, 0, 0, 0 });
-            //
+            // 
             // lblMaxSubs
-            //
+            // 
             lblMaxSubs.AutoSize = true;
             lblMaxSubs.Location = new Point(260, 111);
             lblMaxSubs.Name = "lblMaxSubs";
-            lblMaxSubs.Size = new Size(19, 15);
+            lblMaxSubs.Size = new Size(20, 15);
             lblMaxSubs.TabIndex = 6;
             lblMaxSubs.Text = "до";
-            //
+            // 
             // numMaxSubs
-            //
+            // 
             numMaxSubs.Location = new Point(285, 109);
             numMaxSubs.Maximum = new decimal(new int[] { 2000000000, 0, 0, 0 });
             numMaxSubs.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
@@ -203,18 +216,18 @@ namespace UNNYoutubePromoSender
             numMaxSubs.TabIndex = 7;
             numMaxSubs.ThousandsSeparator = true;
             numMaxSubs.Value = new decimal(new int[] { 500000, 0, 0, 0 });
-            //
+            // 
             // lblPages
-            //
+            // 
             lblPages.AutoSize = true;
             lblPages.Location = new Point(430, 111);
             lblPages.Name = "lblPages";
-            lblPages.Size = new Size(95, 15);
+            lblPages.Size = new Size(96, 15);
             lblPages.TabIndex = 8;
             lblPages.Text = "Страниц поиска";
-            //
+            // 
             // numSearchPages
-            //
+            // 
             numSearchPages.Location = new Point(531, 109);
             numSearchPages.Maximum = new decimal(new int[] { 60, 0, 0, 0 });
             numSearchPages.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
@@ -222,20 +235,20 @@ namespace UNNYoutubePromoSender
             numSearchPages.Size = new Size(50, 23);
             numSearchPages.TabIndex = 9;
             numSearchPages.Value = new decimal(new int[] { 3, 0, 0, 0 });
-            //
+            // 
             // btnSearch
-            //
+            // 
             btnSearch.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnSearch.Location = new Point(601, 106);
+            btnSearch.Location = new Point(619, 106);
             btnSearch.Name = "btnSearch";
             btnSearch.Size = new Size(159, 27);
             btnSearch.TabIndex = 10;
             btnSearch.Text = "Найти каналы";
             btnSearch.UseVisualStyleBackColor = true;
             btnSearch.Click += BtnSearch_Click;
-            //
+            // 
             // dgvChannels
-            //
+            // 
             dgvChannels.AllowUserToAddRows = false;
             dgvChannels.AllowUserToDeleteRows = false;
             dgvChannels.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
@@ -247,12 +260,12 @@ namespace UNNYoutubePromoSender
             dgvChannels.ReadOnly = true;
             dgvChannels.RowHeadersVisible = false;
             dgvChannels.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dgvChannels.Size = new Size(748, 155);
+            dgvChannels.Size = new Size(766, 155);
             dgvChannels.TabIndex = 11;
             dgvChannels.DoubleClick += DgvChannels_DoubleClick;
-            //
+            // 
             // btnOpenSeleniumAbout
-            //
+            // 
             btnOpenSeleniumAbout.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             btnOpenSeleniumAbout.Location = new Point(12, 325);
             btnOpenSeleniumAbout.Name = "btnOpenSeleniumAbout";
@@ -261,9 +274,9 @@ namespace UNNYoutubePromoSender
             btnOpenSeleniumAbout.Text = "Открыть «О канале» и найти email";
             btnOpenSeleniumAbout.UseVisualStyleBackColor = true;
             btnOpenSeleniumAbout.Click += BtnOpenSeleniumAbout_Click;
-            //
+            // 
             // btnExtractEmail
-            //
+            // 
             btnExtractEmail.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             btnExtractEmail.Location = new Point(266, 325);
             btnExtractEmail.Name = "btnExtractEmail";
@@ -272,9 +285,9 @@ namespace UNNYoutubePromoSender
             btnExtractEmail.Text = "Ещё раз найти email";
             btnExtractEmail.UseVisualStyleBackColor = true;
             btnExtractEmail.Click += BtnExtractEmail_Click;
-            //
+            // 
             // btnCloseBrowser
-            //
+            // 
             btnCloseBrowser.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             btnCloseBrowser.Location = new Point(450, 325);
             btnCloseBrowser.Name = "btnCloseBrowser";
@@ -283,21 +296,22 @@ namespace UNNYoutubePromoSender
             btnCloseBrowser.Text = "Закрыть браузер";
             btnCloseBrowser.UseVisualStyleBackColor = true;
             btnCloseBrowser.Click += BtnCloseBrowser_Click;
-            //
+            // 
             // chkSkipFilledEmails
-            //
+            // 
             chkSkipFilledEmails.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             chkSkipFilledEmails.AutoSize = true;
+            chkSkipFilledEmails.Checked = true;
+            chkSkipFilledEmails.CheckState = CheckState.Checked;
             chkSkipFilledEmails.Location = new Point(12, 300);
             chkSkipFilledEmails.Name = "chkSkipFilledEmails";
-            chkSkipFilledEmails.Size = new Size(320, 19);
+            chkSkipFilledEmails.Size = new Size(264, 19);
             chkSkipFilledEmails.TabIndex = 15;
             chkSkipFilledEmails.Text = "Пропускать строки с уже найденным email";
             chkSkipFilledEmails.UseVisualStyleBackColor = true;
-            chkSkipFilledEmails.Checked = true;
-            //
+            // 
             // btnAutoTableWalk
-            //
+            // 
             btnAutoTableWalk.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             btnAutoTableWalk.Location = new Point(12, 360);
             btnAutoTableWalk.Name = "btnAutoTableWalk";
@@ -306,9 +320,9 @@ namespace UNNYoutubePromoSender
             btnAutoTableWalk.Text = "Авто-обход таблицы";
             btnAutoTableWalk.UseVisualStyleBackColor = true;
             btnAutoTableWalk.Click += BtnAutoTableWalk_Click;
-            //
+            // 
             // btnStopTableWalk
-            //
+            // 
             btnStopTableWalk.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             btnStopTableWalk.Enabled = false;
             btnStopTableWalk.Location = new Point(238, 360);
@@ -318,9 +332,9 @@ namespace UNNYoutubePromoSender
             btnStopTableWalk.Text = "Стоп";
             btnStopTableWalk.UseVisualStyleBackColor = true;
             btnStopTableWalk.Click += BtnStopTableWalk_Click;
-            //
+            // 
             // grpMailTransport
-            //
+            // 
             grpMailTransport.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             grpMailTransport.Controls.Add(lblSmtpBlock);
             grpMailTransport.Controls.Add(txtSmtpHost);
@@ -335,42 +349,41 @@ namespace UNNYoutubePromoSender
             grpMailTransport.Controls.Add(lblImapEnc);
             grpMailTransport.Controls.Add(cmbImapEncrypt);
             grpMailTransport.Controls.Add(chkImapCopyToSent);
-            grpMailTransport.Location = new Point(12, 423);
+            grpMailTransport.Location = new Point(12, 414);
             grpMailTransport.Name = "grpMailTransport";
-            grpMailTransport.Size = new Size(776, 88);
+            grpMailTransport.Size = new Size(794, 88);
             grpMailTransport.TabIndex = 3;
             grpMailTransport.TabStop = false;
             grpMailTransport.Text = "Серверы: SMTP (отправка) и IMAP (копия в «Отправленные»)";
-            //
+            // 
             // lblSmtpBlock
-            //
+            // 
             lblSmtpBlock.AutoSize = true;
             lblSmtpBlock.Location = new Point(12, 24);
             lblSmtpBlock.Name = "lblSmtpBlock";
             lblSmtpBlock.Size = new Size(37, 15);
             lblSmtpBlock.TabIndex = 0;
             lblSmtpBlock.Text = "SMTP";
-            //
+            // 
             // txtSmtpHost
-            //
-            txtSmtpHost.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            // 
             txtSmtpHost.Location = new Point(60, 21);
             txtSmtpHost.Name = "txtSmtpHost";
             txtSmtpHost.PlaceholderText = "smtp.yandex.ru";
-            txtSmtpHost.Size = new Size(260, 23);
+            txtSmtpHost.Size = new Size(264, 23);
             txtSmtpHost.TabIndex = 1;
-            //
+            // 
             // lblSmtpPortLabel
-            //
+            // 
             lblSmtpPortLabel.AutoSize = true;
             lblSmtpPortLabel.Location = new Point(330, 24);
             lblSmtpPortLabel.Name = "lblSmtpPortLabel";
-            lblSmtpPortLabel.Size = new Size(31, 15);
+            lblSmtpPortLabel.Size = new Size(35, 15);
             lblSmtpPortLabel.TabIndex = 2;
             lblSmtpPortLabel.Text = "Порт";
-            //
+            // 
             // numSmtpPort
-            //
+            // 
             numSmtpPort.Location = new Point(368, 22);
             numSmtpPort.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
             numSmtpPort.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
@@ -378,54 +391,53 @@ namespace UNNYoutubePromoSender
             numSmtpPort.Size = new Size(56, 23);
             numSmtpPort.TabIndex = 3;
             numSmtpPort.Value = new decimal(new int[] { 587, 0, 0, 0 });
-            //
+            // 
             // lblSmtpEnc
-            //
+            // 
             lblSmtpEnc.AutoSize = true;
             lblSmtpEnc.Location = new Point(434, 24);
             lblSmtpEnc.Name = "lblSmtpEnc";
-            lblSmtpEnc.Size = new Size(66, 15);
+            lblSmtpEnc.Size = new Size(80, 15);
             lblSmtpEnc.TabIndex = 4;
             lblSmtpEnc.Text = "Шифрование";
-            //
+            // 
             // cmbSmtpEncrypt
-            //
+            // 
             cmbSmtpEncrypt.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbSmtpEncrypt.FormattingEnabled = true;
-            cmbSmtpEncrypt.Location = new Point(505, 21);
+            cmbSmtpEncrypt.Location = new Point(520, 21);
             cmbSmtpEncrypt.Name = "cmbSmtpEncrypt";
-            cmbSmtpEncrypt.Size = new Size(110, 23);
+            cmbSmtpEncrypt.Size = new Size(95, 23);
             cmbSmtpEncrypt.TabIndex = 5;
-            //
+            // 
             // lblImapBlock
-            //
+            // 
             lblImapBlock.AutoSize = true;
             lblImapBlock.Location = new Point(12, 54);
             lblImapBlock.Name = "lblImapBlock";
             lblImapBlock.Size = new Size(36, 15);
             lblImapBlock.TabIndex = 6;
             lblImapBlock.Text = "IMAP";
-            //
+            // 
             // txtImapHost
-            //
-            txtImapHost.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            // 
             txtImapHost.Location = new Point(60, 51);
             txtImapHost.Name = "txtImapHost";
             txtImapHost.PlaceholderText = "imap.yandex.ru";
-            txtImapHost.Size = new Size(260, 23);
+            txtImapHost.Size = new Size(264, 23);
             txtImapHost.TabIndex = 7;
-            //
+            // 
             // lblImapPortLabel
-            //
+            // 
             lblImapPortLabel.AutoSize = true;
             lblImapPortLabel.Location = new Point(330, 54);
             lblImapPortLabel.Name = "lblImapPortLabel";
-            lblImapPortLabel.Size = new Size(31, 15);
+            lblImapPortLabel.Size = new Size(35, 15);
             lblImapPortLabel.TabIndex = 8;
             lblImapPortLabel.Text = "Порт";
-            //
+            // 
             // numImapPort
-            //
+            // 
             numImapPort.Location = new Point(368, 52);
             numImapPort.Maximum = new decimal(new int[] { 65535, 0, 0, 0 });
             numImapPort.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
@@ -433,38 +445,39 @@ namespace UNNYoutubePromoSender
             numImapPort.Size = new Size(56, 23);
             numImapPort.TabIndex = 9;
             numImapPort.Value = new decimal(new int[] { 993, 0, 0, 0 });
-            //
+            // 
             // lblImapEnc
-            //
+            // 
             lblImapEnc.AutoSize = true;
             lblImapEnc.Location = new Point(434, 54);
             lblImapEnc.Name = "lblImapEnc";
-            lblImapEnc.Size = new Size(66, 15);
+            lblImapEnc.Size = new Size(80, 15);
             lblImapEnc.TabIndex = 10;
             lblImapEnc.Text = "Шифрование";
-            //
+            // 
             // cmbImapEncrypt
-            //
+            // 
             cmbImapEncrypt.DropDownStyle = ComboBoxStyle.DropDownList;
             cmbImapEncrypt.FormattingEnabled = true;
-            cmbImapEncrypt.Location = new Point(505, 51);
+            cmbImapEncrypt.Location = new Point(520, 51);
             cmbImapEncrypt.Name = "cmbImapEncrypt";
-            cmbImapEncrypt.Size = new Size(110, 23);
+            cmbImapEncrypt.Size = new Size(95, 23);
             cmbImapEncrypt.TabIndex = 11;
-            //
+            // 
             // chkImapCopyToSent
-            //
+            // 
             chkImapCopyToSent.AutoSize = true;
+            chkImapCopyToSent.Checked = true;
+            chkImapCopyToSent.CheckState = CheckState.Checked;
             chkImapCopyToSent.Location = new Point(630, 53);
             chkImapCopyToSent.Name = "chkImapCopyToSent";
-            chkImapCopyToSent.Size = new Size(140, 19);
+            chkImapCopyToSent.Size = new Size(154, 19);
             chkImapCopyToSent.TabIndex = 12;
             chkImapCopyToSent.Text = "Копия в Отправленные";
             chkImapCopyToSent.UseVisualStyleBackColor = true;
-            chkImapCopyToSent.Checked = true;
-            //
+            // 
             // grpMail
-            //
+            // 
             grpMail.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             grpMail.Controls.Add(lblGmail);
             grpMail.Controls.Add(txtGmail);
@@ -478,145 +491,145 @@ namespace UNNYoutubePromoSender
             grpMail.Controls.Add(txtBody);
             grpMail.Controls.Add(btnSendMail);
             grpMail.Controls.Add(btnBulkSend);
-            grpMail.Location = new Point(12, 517);
+            grpMail.Location = new Point(12, 508);
             grpMail.Name = "grpMail";
-            grpMail.Size = new Size(776, 228);
+            grpMail.Size = new Size(794, 228);
             grpMail.TabIndex = 1;
             grpMail.TabStop = false;
             grpMail.Text = "Почта: текст письма";
-            //
+            // 
             // lblGmail
-            //
+            // 
             lblGmail.AutoSize = true;
             lblGmail.Location = new Point(12, 28);
             lblGmail.Name = "lblGmail";
             lblGmail.Size = new Size(96, 15);
             lblGmail.TabIndex = 0;
             lblGmail.Text = "Яндекс (от кого)";
-            //
+            // 
             // txtGmail
-            //
+            // 
             txtGmail.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             txtGmail.Location = new Point(120, 25);
             txtGmail.Name = "txtGmail";
             txtGmail.PlaceholderText = "you@yandex.ru";
-            txtGmail.Size = new Size(640, 23);
+            txtGmail.Size = new Size(658, 23);
             txtGmail.TabIndex = 1;
-            //
+            // 
             // lblAppPass
-            //
+            // 
             lblAppPass.AutoSize = true;
             lblAppPass.Location = new Point(12, 57);
             lblAppPass.Name = "lblAppPass";
-            lblAppPass.Size = new Size(107, 15);
+            lblAppPass.Size = new Size(169, 15);
             lblAppPass.TabIndex = 2;
             lblAppPass.Text = "Пароль приложения Яндекса";
-            //
+            // 
             // txtAppPassword
-            //
+            // 
             txtAppPassword.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            txtAppPassword.Location = new Point(120, 54);
+            txtAppPassword.Location = new Point(187, 54);
             txtAppPassword.Name = "txtAppPassword";
-            txtAppPassword.Size = new Size(640, 23);
+            txtAppPassword.Size = new Size(591, 23);
             txtAppPassword.TabIndex = 3;
             txtAppPassword.UseSystemPasswordChar = true;
-            //
+            // 
             // lblTo
-            //
+            // 
             lblTo.AutoSize = true;
             lblTo.Location = new Point(12, 86);
             lblTo.Name = "lblTo";
-            lblTo.Size = new Size(75, 15);
+            lblTo.Size = new Size(76, 15);
             lblTo.TabIndex = 4;
             lblTo.Text = "Кому (email)";
-            //
+            // 
             // txtTo
-            //
+            // 
             txtTo.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             txtTo.Location = new Point(120, 83);
             txtTo.Name = "txtTo";
             txtTo.PlaceholderText = "для одного письма; массовая — из столбца «Найденный email»";
-            txtTo.Size = new Size(640, 23);
+            txtTo.Size = new Size(658, 23);
             txtTo.TabIndex = 5;
-            //
+            // 
             // lblSubject
-            //
+            // 
             lblSubject.AutoSize = true;
             lblSubject.Location = new Point(12, 115);
             lblSubject.Name = "lblSubject";
-            lblSubject.Size = new Size(58, 15);
+            lblSubject.Size = new Size(34, 15);
             lblSubject.TabIndex = 6;
             lblSubject.Text = "Тема";
-            //
+            // 
             // txtSubject
-            //
+            // 
             txtSubject.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             txtSubject.Location = new Point(120, 112);
             txtSubject.Name = "txtSubject";
-            txtSubject.Size = new Size(640, 23);
+            txtSubject.Size = new Size(658, 23);
             txtSubject.TabIndex = 7;
-            //
+            // 
             // lblBody
-            //
+            // 
             lblBody.AutoSize = true;
             lblBody.Location = new Point(12, 144);
             lblBody.Name = "lblBody";
-            lblBody.Size = new Size(37, 15);
+            lblBody.Size = new Size(36, 15);
             lblBody.TabIndex = 8;
             lblBody.Text = "Текст";
-            //
+            // 
             // txtBody
-            //
+            // 
             txtBody.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             txtBody.Location = new Point(120, 141);
             txtBody.Multiline = true;
             txtBody.Name = "txtBody";
             txtBody.ScrollBars = ScrollBars.Vertical;
-            txtBody.Size = new Size(532, 38);
+            txtBody.Size = new Size(658, 38);
             txtBody.TabIndex = 9;
-            //
-            // btnBulkSend
-            //
-            btnBulkSend.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnBulkSend.Location = new Point(452, 176);
-            btnBulkSend.Name = "btnBulkSend";
-            btnBulkSend.Size = new Size(194, 27);
-            btnBulkSend.TabIndex = 11;
-            btnBulkSend.Text = "Рассылка по таблице";
-            btnBulkSend.UseVisualStyleBackColor = true;
-            btnBulkSend.Click += BtnBulkSend_Click;
-            //
+            // 
             // btnSendMail
-            //
+            // 
             btnSendMail.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            btnSendMail.Location = new Point(658, 176);
+            btnSendMail.Location = new Point(676, 185);
             btnSendMail.Name = "btnSendMail";
             btnSendMail.Size = new Size(102, 27);
             btnSendMail.TabIndex = 10;
             btnSendMail.Text = "Одному";
             btnSendMail.UseVisualStyleBackColor = true;
             btnSendMail.Click += BtnSendMail_Click;
-            //
+            // 
+            // btnBulkSend
+            // 
+            btnBulkSend.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnBulkSend.Location = new Point(476, 185);
+            btnBulkSend.Name = "btnBulkSend";
+            btnBulkSend.Size = new Size(194, 27);
+            btnBulkSend.TabIndex = 11;
+            btnBulkSend.Text = "Рассылка по таблице";
+            btnBulkSend.UseVisualStyleBackColor = true;
+            btnBulkSend.Click += BtnBulkSend_Click;
+            // 
             // statusStrip
-            //
-            statusStrip.Dock = DockStyle.Bottom;
+            // 
             statusStrip.Items.AddRange(new ToolStripItem[] { lblStatus });
+            statusStrip.Location = new Point(0, 751);
             statusStrip.Name = "statusStrip";
-            statusStrip.Size = new Size(800, 22);
+            statusStrip.Size = new Size(822, 22);
             statusStrip.TabIndex = 2;
             statusStrip.Text = "statusStrip1";
-            //
+            // 
             // lblStatus
-            //
+            // 
             lblStatus.Name = "lblStatus";
-            lblStatus.Size = new Size(118, 17);
+            lblStatus.Size = new Size(45, 17);
             lblStatus.Text = "Готово";
-            //
+            // 
             // Form1
-            //
+            // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 782);
+            ClientSize = new Size(822, 773);
             Controls.Add(statusStrip);
             Controls.Add(grpMail);
             Controls.Add(grpMailTransport);
@@ -666,6 +679,7 @@ namespace UNNYoutubePromoSender
         private Button btnStopTableWalk;
         private CheckBox chkRussianChannelsOnly;
         private CheckBox chkNonRussiaChannelsOnly;
+        private CheckBox chkSearchFromCacheOnly;
         private GroupBox grpMailTransport;
         private Label lblSmtpBlock;
         private TextBox txtSmtpHost;

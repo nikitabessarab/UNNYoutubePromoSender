@@ -37,6 +37,7 @@ namespace UNNYoutubePromoSender
                 return;
             _channels = new BindingList<ChannelListItem>(rows.ToList());
             dgvChannels.DataSource = _channels;
+            YoutubeSearchCacheStore.ImportMissingFromSnapshot(rows);
             SetStatus($"Загружено из сохранения: {_channels.Count} строк");
         }
 
@@ -49,6 +50,7 @@ namespace UNNYoutubePromoSender
             SetNumeric(numSearchPages, s.SearchPages);
             chkRussianChannelsOnly.Checked = s.RussianChannelsOnly;
             chkNonRussiaChannelsOnly.Checked = s.NonRussiaChannelsOnly;
+            chkSearchFromCacheOnly.Checked = s.SearchOnlyFromCache;
             chkSkipFilledEmails.Checked = s.SkipFilledEmails;
             txtGmail.Text = s.GmailAddress;
             txtAppPassword.Text = s.GmailAppPassword;
@@ -94,6 +96,7 @@ namespace UNNYoutubePromoSender
                     SearchPages = (int)numSearchPages.Value,
                     RussianChannelsOnly = chkRussianChannelsOnly.Checked,
                     NonRussiaChannelsOnly = chkNonRussiaChannelsOnly.Checked,
+                    SearchOnlyFromCache = chkSearchFromCacheOnly.Checked,
                     SkipFilledEmails = chkSkipFilledEmails.Checked,
                     GmailAddress = txtGmail.Text,
                     GmailAppPassword = txtAppPassword.Text,
@@ -183,20 +186,31 @@ namespace UNNYoutubePromoSender
                     return;
                 }
 
+                var cacheOnly = chkSearchFromCacheOnly.Checked;
+                if (!cacheOnly && string.IsNullOrWhiteSpace(txtApiKey.Text))
+                {
+                    MessageBox.Show(this, "Укажите API-ключ YouTube Data API v3 или включите «Только из кеша».",
+                        "Проверка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
                 var list = await _youtubeSearch.SearchChannelsAsync(
-                    txtApiKey.Text.Trim(),
+                    cacheOnly ? "" : txtApiKey.Text.Trim(),
                     txtQuery.Text,
                     min,
                     max,
                     (int)numSearchPages.Value,
                     chkRussianChannelsOnly.Checked,
                     chkNonRussiaChannelsOnly.Checked,
+                    cacheOnly,
                     CancellationToken.None).ConfigureAwait(true);
 
                 foreach (var item in list)
                     _channels.Add(item);
 
-                SetStatus($"Найдено каналов: {_channels.Count}");
+                SetStatus(list.Count == 0 && cacheOnly
+                    ? "Кеш пуст или нет каналов под заданные фильтры (0 запросов к API)"
+                    : $"Найдено каналов: {_channels.Count}");
             }
             catch (Exception ex)
             {
@@ -461,6 +475,76 @@ namespace UNNYoutubePromoSender
                 cancellationToken).ConfigureAwait(true);
         }
 
+        /// <summary>
+        /// Помечает каналы с тем же найденным email, что и успешная отправка «Одному».
+        /// </summary>
+        private void MarkSuccessfulSendByRecipient(string recipientEmail)
+        {
+            if (string.IsNullOrWhiteSpace(recipientEmail))
+                return;
+            var norm = recipientEmail.Trim();
+            var changed = false;
+            foreach (var ch in _channels)
+            {
+                if (string.IsNullOrWhiteSpace(ch.FoundEmail))
+                    continue;
+                if (string.Equals(ch.FoundEmail.Trim(), norm, StringComparison.OrdinalIgnoreCase))
+                {
+                    ch.MailSentAtUtc = DateTime.UtcNow;
+                    changed = true;
+                }
+            }
+
+            if (!changed)
+                return;
+
+            try
+            {
+                FoundContactsStore.SaveSnapshot(_channels.ToList());
+            }
+            catch
+            {
+                // снимок сохранится при закрытии формы
+            }
+        }
+
+        /// <summary>
+        /// Добавляет пояснение к типичным ответам SMTP (авторизация, антиспам и т.д.).
+        /// </summary>
+        private static string FormatMailAuthErrorMessage(Exception ex)
+        {
+            var msg = ex.GetBaseException().Message;
+            // Сервер может отдать «535: 5.7.8 …» или только «5.7.8 …» без кода 535.
+            var smtpAuthCode =
+                msg.Contains("535", StringComparison.Ordinal) ||
+                msg.Contains("5.7.8", StringComparison.Ordinal);
+
+            if (msg.Contains("5.7.1", StringComparison.Ordinal) &&
+                msg.Contains("spam", StringComparison.OrdinalIgnoreCase))
+            {
+                return msg + Environment.NewLine + Environment.NewLine +
+                    "Яндекс отклонил письмо как подозрительное на спам (содержание, тема, массовая рассылка). " +
+                    "Смягчите текст, не копируйте один шаблон десяткам незнакомых адресов, проверьте ссылку из сообщения на ya.cc. " +
+                    "Массовая «холодная» рассылка часто блокируется политикой почтовых сервисов.";
+            }
+
+            if (msg.Contains("access rights", StringComparison.OrdinalIgnoreCase) && smtpAuthCode)
+            {
+                return msg + Environment.NewLine + Environment.NewLine +
+                    "Яндекс: на mail.yandex.ru откройте Настройки → Почтовые программы и включите доступ " +
+                    "по IMAP и отправку через SMTP. В поле пароля в программе укажите пароль приложения " +
+                    "(раздел «Пароли приложений»), не основной пароль, если включена защита аккаунта.";
+            }
+
+            if (smtpAuthCode)
+            {
+                return msg + Environment.NewLine + Environment.NewLine +
+                    "Проверьте полный email, пароль приложения для почтового клиента и настройки доступа в веб-почте.";
+            }
+
+            return msg;
+        }
+
         private void BtnStopTableWalk_Click(object? sender, EventArgs e)
         {
             _scanCts?.Cancel();
@@ -501,12 +585,14 @@ namespace UNNYoutubePromoSender
             SetStatus("Отправка…");
             try
             {
+                var toOne = txtTo.Text.Trim();
                 await SendOneMailAsync(
-                        txtTo.Text.Trim(),
+                        toOne,
                         txtSubject.Text,
                         txtBody.Text,
                         CancellationToken.None)
                     .ConfigureAwait(true);
+                MarkSuccessfulSendByRecipient(toOne);
                 SetStatus("Письмо отправлено");
                 MessageBox.Show(this, "Письмо отправлено.", "Почта", MessageBoxButtons.OK,
                     MessageBoxIcon.Information);
@@ -514,7 +600,8 @@ namespace UNNYoutubePromoSender
             catch (Exception ex)
             {
                 SetStatus("Ошибка отправки");
-                MessageBox.Show(this, ex.Message, "Ошибка SMTP", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, FormatMailAuthErrorMessage(ex), "Ошибка SMTP", MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
             finally
             {
@@ -526,6 +613,7 @@ namespace UNNYoutubePromoSender
         private async void BtnBulkSend_Click(object? sender, EventArgs e)
         {
             var withEmail = _channels.Where(c => !string.IsNullOrWhiteSpace(c.FoundEmail)).ToList();
+            var pending = withEmail.Where(c => c.MailSentAtUtc == null).ToList();
             if (withEmail.Count == 0)
             {
                 MessageBox.Show(this, "В таблице нет строк с заполненным столбцом «Найденный email».",
@@ -533,8 +621,22 @@ namespace UNNYoutubePromoSender
                 return;
             }
 
+            if (pending.Count == 0)
+            {
+                MessageBox.Show(this,
+                    "По всем строкам с email письмо уже было успешно отправлено ранее (см. столбец «Письмо отправлено»).",
+                    "Рассылка", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            var skipped = withEmail.Count - pending.Count;
+            var intro =
+                $"Будет отправлено писем: {pending.Count}." +
+                (skipped > 0 ? $"\nПропущено (уже отправлено ранее): {skipped}." : "") +
+                "\nТема и текст — как в форме. Пауза между письмами ~2,5 с.\nПродолжить?";
+
             var ok = MessageBox.Show(this,
-                $"Будет отправлено писем: {withEmail.Count}.\nТема и текст — как в форме. Пауза между письмами ~2,5 с.\nПродолжить?",
+                intro,
                 "Рассылка по таблице",
                 MessageBoxButtons.YesNo,
                 MessageBoxIcon.Question);
@@ -550,24 +652,35 @@ namespace UNNYoutubePromoSender
 
             try
             {
-                for (var i = 0; i < withEmail.Count; i++)
+                for (var i = 0; i < pending.Count; i++)
                 {
-                    var ch = withEmail[i];
+                    var ch = pending[i];
                     var to = ch.FoundEmail!.Trim();
-                    SetStatus($"Рассылка {i + 1}/{withEmail.Count}: {to}");
+                    SetStatus($"Рассылка {i + 1}/{pending.Count}: {to}");
                     await SendOneMailAsync(to, subject, body, CancellationToken.None).ConfigureAwait(true);
-                    if (i < withEmail.Count - 1)
+                    ch.MailSentAtUtc = DateTime.UtcNow;
+                    try
+                    {
+                        FoundContactsStore.SaveSnapshot(_channels.ToList());
+                    }
+                    catch
+                    {
+                        // отправка уже прошла; снимок попробуем при закрытии
+                    }
+
+                    if (i < pending.Count - 1)
                         await Task.Delay(BulkSendDelayMs, CancellationToken.None).ConfigureAwait(true);
                 }
 
-                SetStatus($"Рассылка завершена ({withEmail.Count})");
-                MessageBox.Show(this, $"Отправлено писем: {withEmail.Count}.", "Почта",
+                SetStatus($"Рассылка завершена ({pending.Count})");
+                MessageBox.Show(this, $"Отправлено писем: {pending.Count}.", "Почта",
                     MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {
                 SetStatus("Ошибка рассылки");
-                MessageBox.Show(this, ex.Message, "Ошибка SMTP", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, FormatMailAuthErrorMessage(ex), "Ошибка SMTP", MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
             finally
             {

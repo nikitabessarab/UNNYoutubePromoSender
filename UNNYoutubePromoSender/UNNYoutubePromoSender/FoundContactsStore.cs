@@ -38,15 +38,19 @@ public static class FoundContactsStore
         lock (FileLock)
         {
             var sb = new StringBuilder();
-            sb.AppendLine("ChannelId;Title;Subscribers;ChannelUrl;FoundEmail");
+            sb.AppendLine("ChannelId;Title;Subscribers;ChannelUrl;FoundEmail;MailSentAtUtc");
             foreach (var x in items)
             {
+                var sent = x.MailSentAtUtc.HasValue
+                    ? x.MailSentAtUtc.Value.ToString("O")
+                    : "";
                 sb.AppendLine(string.Join(";",
                     Csv(x.ChannelId),
                     Csv(x.Title),
                     x.SubscriberCount?.ToString() ?? "",
                     Csv(x.ChannelUrl),
-                    Csv(x.FoundEmail ?? "")));
+                    Csv(x.FoundEmail ?? ""),
+                    Csv(sent)));
             }
 
             File.WriteAllText(SnapshotPath, sb.ToString(), Utf8Bom);
@@ -101,6 +105,20 @@ public static class FoundContactsStore
                 var mail = Unquote(fields[4]);
                 if (!string.IsNullOrWhiteSpace(mail))
                     ch.FoundEmail = mail.Trim();
+
+                if (fields.Count >= 6)
+                {
+                    var sentRaw = Unquote(fields[5]).Trim();
+                    if (!string.IsNullOrEmpty(sentRaw) &&
+                        DateTime.TryParse(sentRaw, null,
+                            System.Globalization.DateTimeStyles.RoundtripKind, out var sentUtc))
+                    {
+                        ch.MailSentAtUtc = sentUtc.Kind == DateTimeKind.Unspecified
+                            ? DateTime.SpecifyKind(sentUtc, DateTimeKind.Utc)
+                            : sentUtc.ToUniversalTime();
+                    }
+                }
+
                 list.Add(ch);
             }
 
