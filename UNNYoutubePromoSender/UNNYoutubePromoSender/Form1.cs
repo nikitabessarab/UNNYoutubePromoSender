@@ -187,6 +187,22 @@ namespace UNNYoutubePromoSender
                 }
 
                 var cacheOnly = chkSearchFromCacheOnly.Checked;
+                if (cacheOnly)
+                {
+                    var cacheCount = YoutubeSearchCacheStore.LoadDictionary().Count;
+                    if (cacheCount == 0)
+                    {
+                        SetStatus("Локальный кеш пуст");
+                        MessageBox.Show(this,
+                            "Включен режим «Только из кеша», но кеш пока пуст.\n" +
+                            "Снимите эту галочку и выполните хотя бы один обычный поиск через YouTube API.",
+                            "Кеш пуст",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Information);
+                        return;
+                    }
+                }
+
                 if (!cacheOnly && string.IsNullOrWhiteSpace(txtApiKey.Text))
                 {
                     MessageBox.Show(this, "Укажите API-ключ YouTube Data API v3 или включите «Только из кеша».",
@@ -208,9 +224,30 @@ namespace UNNYoutubePromoSender
                 foreach (var item in list)
                     _channels.Add(item);
 
-                SetStatus(list.Count == 0 && cacheOnly
-                    ? "Кеш пуст или нет каналов под заданные фильтры (0 запросов к API)"
-                    : $"Найдено каналов: {_channels.Count}");
+                if (list.Count == 0 && cacheOnly)
+                {
+                    SetStatus("Кеш пуст или нет каналов под заданные фильтры (0 запросов к API)");
+                    MessageBox.Show(this,
+                        "Поиск выполнен в режиме «Только из кеша», поэтому YouTube API не вызывался.\n" +
+                        "Если хотите искать новые каналы, снимите галочку «Только из кеша на диске».",
+                        "Поиск только из кеша",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+                else
+                {
+                    SetStatus($"Найдено каналов: {_channels.Count}");
+                    if (_channels.Count == 0)
+                    {
+                        MessageBox.Show(this,
+                            "Поиск завершен без ошибок, но подходящих каналов не найдено.\n" +
+                            "Проверьте фильтры: диапазон подписчиков, флаги «русскоязычные» / «не в России», текст запроса.\n" +
+                            "Также убедитесь, что снята галочка «Только из кеша», если нужны новые каналы из YouTube.",
+                            "Результатов нет",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Information);
+                    }
+                }
             }
             catch (Exception ex)
             {
