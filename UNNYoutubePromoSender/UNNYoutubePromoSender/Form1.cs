@@ -600,6 +600,50 @@ namespace UNNYoutubePromoSender
             }
         }
 
+        private void DgvChannels_SelectionChanged(object? sender, EventArgs e)
+        {
+            ApplySelectedRowToMailToField();
+            TryNavigateBrowserToSelectedChannel();
+        }
+
+        /// <summary>
+        /// Подставляет в «Кому» найденный email выбранной строки. Для уже отправленных — поле пустое.
+        /// </summary>
+        private void ApplySelectedRowToMailToField()
+        {
+            if (dgvChannels.CurrentRow?.DataBoundItem is not ChannelListItem ch)
+                return;
+            if (ch.MailSentAtUtc != null)
+            {
+                txtTo.Text = "";
+                return;
+            }
+
+            txtTo.Text = string.IsNullOrWhiteSpace(ch.FoundEmail) ? "" : ch.FoundEmail.Trim();
+        }
+
+        /// <summary>
+        /// Подставляет URL страницы «О канале» в адресную строку открытого Chrome (если браузер уже запущен из программы).
+        /// </summary>
+        private void TryNavigateBrowserToSelectedChannel()
+        {
+            if (_scanRunning)
+                return;
+            if (_driver == null)
+                return;
+            if (dgvChannels.CurrentRow?.DataBoundItem is not ChannelListItem ch)
+                return;
+            try
+            {
+                _driver.Navigate().GoToUrl(ch.AboutUrl);
+                SetStatus($"Открыта страница: {ch.Title}");
+            }
+            catch (Exception ex)
+            {
+                SetStatus($"Браузер: не удалось открыть страницу канала ({ex.Message})");
+            }
+        }
+
         private void DgvChannels_DoubleClick(object? sender, EventArgs e)
         {
             if (dgvChannels.CurrentRow?.DataBoundItem is not ChannelListItem ch)

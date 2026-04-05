@@ -6,7 +6,10 @@ namespace UNNYoutubePromoSender;
 
 public sealed class YoutubeChannelSearchService
 {
-    /// <param name="searchOnlyFromCache">??? ???????? ? YouTube ? ?????? ?????????? ?? <see cref="YoutubeSearchCacheStore"/>.</param>
+    /// <summary>Останавливаем сбор ID, чтобы не делать десятки вызовов search.list подряд (квота ~100 за вызов).</summary>
+    private const int MaxChannelIdsToCollect = 800;
+
+    /// <param name="searchOnlyFromCache">Только локальный кеш, без запросов к YouTube API.</param>
     public async Task<IReadOnlyList<ChannelListItem>> SearchChannelsAsync(
         string apiKey,
         string? searchQuery,
@@ -26,7 +29,7 @@ public sealed class YoutubeChannelSearchService
         }
 
         if (string.IsNullOrWhiteSpace(apiKey))
-            throw new ArgumentException("??????? API-???? YouTube Data API v3.", nameof(apiKey));
+            throw new ArgumentException("Укажите API-ключ YouTube Data API v3.", nameof(apiKey));
 
         var pages = Math.Max(1, maxSearchPages);
 
@@ -207,6 +210,8 @@ public sealed class YoutubeChannelSearchService
             var searchResponse = await search.ExecuteAsync(cancellationToken).ConfigureAwait(false);
 
             AppendChannelIds(channelIds, searchResponse.Items);
+            if (channelIds.Count >= MaxChannelIdsToCollect)
+                break;
             pageToken = searchResponse.NextPageToken;
         } while (!string.IsNullOrEmpty(pageToken) && pages < maxPages);
     }
@@ -235,6 +240,8 @@ public sealed class YoutubeChannelSearchService
 
             AppendChannelIds(channelIds, searchResponse.Items);
             nextTokenForSeed[seedIndex] = searchResponse.NextPageToken;
+            if (channelIds.Count >= MaxChannelIdsToCollect)
+                break;
         }
     }
 
@@ -278,11 +285,17 @@ public sealed class YoutubeChannelSearchService
     {
         if (russianChannelsOnly)
         {
+            // Явные коды Unicode: при поломке кодировки файла строка букв превращалась в "?" и поиск возвращал мусор/пусто.
             var list = new List<string>();
-            const string letters = "?????????????????????????????????";
-            foreach (var c in letters)
-                list.Add(c.ToString());
-            list.AddRange(new[] { "??", "??", "??", "??", "??", "??", "???", "???", "???", "???", "???", "???" });
+            for (var cp = 0x0430; cp <= 0x044F; cp++)
+                list.Add(((char)cp).ToString());
+            list.Add(((char)0x0451).ToString());
+            list.AddRange(new[]
+            {
+                "\u043D\u0430", "\u043D\u0435", "\u043D\u043E", "\u043F\u043E", "\u0442\u043E",
+                "\u0447\u0442", "\u043A\u0430\u043A", "\u0434\u043B\u044F", "\u044D\u0442\u043E",
+                "\u0433\u0434\u0435", "\u0432\u0441\u0435", "\u0442\u043E\u043F"
+            });
             return list;
         }
 

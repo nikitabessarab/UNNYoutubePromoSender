@@ -262,6 +262,7 @@ namespace UNNYoutubePromoSender
             dgvChannels.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dgvChannels.Size = new Size(766, 155);
             dgvChannels.TabIndex = 11;
+            dgvChannels.SelectionChanged += DgvChannels_SelectionChanged;
             dgvChannels.DoubleClick += DgvChannels_DoubleClick;
             // 
             // btnOpenSeleniumAbout
