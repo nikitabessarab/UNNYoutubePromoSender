@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.73.0.4099" />
     <PackageReference Include="MailKit" Version="4.15.1" />
     <PackageReference Include="Selenium.WebDriver" Version="4.41.0" />

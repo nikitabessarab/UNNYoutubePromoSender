@@ -39,6 +39,7 @@ namespace UNNYoutubePromoSender
             chkSkipFilledEmails = new CheckBox();
             btnAutoTableWalk = new Button();
             btnStopTableWalk = new Button();
+            btnExportExcel = new Button();
             grpMailTransport = new GroupBox();
             lblSmtpBlock = new Label();
             txtSmtpHost = new TextBox();
@@ -104,6 +105,7 @@ namespace UNNYoutubePromoSender
             grpYouTube.Controls.Add(chkSkipFilledEmails);
             grpYouTube.Controls.Add(btnAutoTableWalk);
             grpYouTube.Controls.Add(btnStopTableWalk);
+            grpYouTube.Controls.Add(btnExportExcel);
             grpYouTube.Location = new Point(12, 12);
             grpYouTube.Name = "grpYouTube";
             grpYouTube.Size = new Size(794, 405);
@@ -333,6 +335,17 @@ namespace UNNYoutubePromoSender
             btnStopTableWalk.Text = "Стоп";
             btnStopTableWalk.UseVisualStyleBackColor = true;
             btnStopTableWalk.Click += BtnStopTableWalk_Click;
+            // 
+            // btnExportExcel
+            // 
+            btnExportExcel.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            btnExportExcel.Location = new Point(336, 360);
+            btnExportExcel.Name = "btnExportExcel";
+            btnExportExcel.Size = new Size(180, 27);
+            btnExportExcel.TabIndex = 20;
+            btnExportExcel.Text = "Выгрузить в Excel";
+            btnExportExcel.UseVisualStyleBackColor = true;
+            btnExportExcel.Click += BtnExportExcel_Click;
             // 
             // grpMailTransport
             // 
@@ -678,6 +691,7 @@ namespace UNNYoutubePromoSender
         private CheckBox chkSkipFilledEmails;
         private Button btnAutoTableWalk;
         private Button btnStopTableWalk;
+        private Button btnExportExcel;
         private CheckBox chkRussianChannelsOnly;
         private CheckBox chkNonRussiaChannelsOnly;
         private CheckBox chkSearchFromCacheOnly;

@@ -361,6 +361,7 @@ namespace UNNYoutubePromoSender
             btnSearch.Enabled = !busy;
             btnAutoTableWalk.Enabled = !busy;
             btnBulkSend.Enabled = !busy;
+            btnExportExcel.Enabled = !busy;
         }
 
         private void SetScanRunning(bool running)
@@ -376,8 +377,42 @@ namespace UNNYoutubePromoSender
             chkRussianChannelsOnly.Enabled = !running;
             chkNonRussiaChannelsOnly.Enabled = !running;
             btnBulkSend.Enabled = !running;
+            btnExportExcel.Enabled = !running;
             UseWaitCursor = running;
             Cursor = running ? Cursors.WaitCursor : Cursors.Default;
+        }
+
+        private void BtnExportExcel_Click(object? sender, EventArgs e)
+        {
+            if (_channels.Count == 0)
+            {
+                MessageBox.Show(this, "Таблица пуста — нечего выгружать.", "Экспорт в Excel",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            using var dlg = new SaveFileDialog
+            {
+                Filter = "Книга Excel (*.xlsx)|*.xlsx",
+                FileName = $"channels_{DateTime.Now:yyyy-MM-dd_HHmm}.xlsx",
+                DefaultExt = "xlsx",
+                AddExtension = true
+            };
+
+            if (dlg.ShowDialog(this) != DialogResult.OK)
+                return;
+
+            try
+            {
+                ChannelsExcelExporter.ExportToFile(_channels.ToList(), dlg.FileName);
+                SetStatus($"Таблица сохранена: {dlg.FileName}");
+                MessageBox.Show(this, "Файл Excel сохранён.", "Экспорт",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(this, ex.Message, "Ошибка экспорта", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void BtnAutoTableWalk_Click(object? sender, EventArgs e)
